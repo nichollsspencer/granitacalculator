@@ -464,6 +464,10 @@
       <div class="brix-note note-aside" id="brix-note"></div>
     </div>
   </details>
+
+  <footer style="margin-top:2rem; padding-top:1rem; border-top:0.5px solid var(--border); font-size:var(--fs-sm); color:var(--text-secondary); text-align:center;">
+    © <span id="copyright-year"></span> Spencer Nicholls | All Rights Reserved
+  </footer>
 </div>
 
 <script>
@@ -873,6 +877,14 @@ function onBaseWeightChange() {
   if (document.getElementById('alcohol2-toggle').checked) onIntensityChange(2);
 }
 
+// Copyright start year is fixed at whenever this notice was first added —
+// don't change this retroactively. The second year only appears once the
+// current year has actually moved past it, so today (the same year this was
+// added) shows just one year; next year onward it shows the range automatically.
+const COPYRIGHT_START_YEAR = 2026;
+const currentYear = new Date().getFullYear();
+document.getElementById('copyright-year').textContent =
+  currentYear > COPYRIGHT_START_YEAR ? `${COPYRIGHT_START_YEAR}–${currentYear}` : `${COPYRIGHT_START_YEAR}`;
 calc();
 </script>
 </body>
