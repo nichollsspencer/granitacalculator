@@ -123,6 +123,7 @@
   }
   .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
   .alcohol-fields { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .alcohol-fields-full { grid-column: 1 / -1; }
 
   .slider-card { margin-bottom: 1rem; }
   .slider-card h3 { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
@@ -219,18 +220,27 @@
     <div id="alcohol-fields" style="display:none;" class="alcohol-fields">
       <div>
         <label for="alcohol-type">Type</label>
-        <select id="alcohol-type" onchange="calc()">
-          <option value="11">Prosecco / sparkling wine (~11% ABV)</option>
-          <option value="12.5">White or rosé wine (~12.5% ABV)</option>
-          <option value="13.5">Red wine (~13.5% ABV)</option>
-          <option value="20">Sherry / port (~20% ABV)</option>
-          <option value="35">Liqueur, e.g. Aperol (~35% ABV)</option>
-          <option value="40">Spirit, e.g. vodka, rum (~40% ABV)</option>
-          <option value="custom-abv">Custom ABV ↓</option>
+        <select id="alcohol-type" onchange="toggleCustomAlcoholBrix(); calc()">
+          <option value="prosecco">Prosecco / sparkling wine (~11% ABV, dry)</option>
+          <option value="white_wine">White or rosé wine (~12.5% ABV, dry)</option>
+          <option value="red_wine">Red wine (~13.5% ABV, dry)</option>
+          <option value="sherry">Sherry / port (~20% ABV, sweet)</option>
+          <option value="kahlua">Coffee liqueur, e.g. Kahlúa (~20% ABV, sweet)</option>
+          <option value="amaretto">Amaretto / almond liqueur (~24% ABV, sweet)</option>
+          <option value="aperol">Aperitivo, e.g. Aperol (~11% ABV, sweet)</option>
+          <option value="triple_sec">Triple sec / orange liqueur (~30% ABV, sweet)</option>
+          <option value="vodka">Spirit, e.g. vodka, gin, rum (~40% ABV, dry)</option>
+          <option value="custom">Custom — enter ABV &amp; Brix ↓</option>
         </select>
-        <div id="custom-abv-wrap" style="display:none; margin-top:8px;">
-          <label for="custom-abv">ABV (%)</label>
-          <input type="number" id="custom-abv" value="15" min="1" max="96" step="0.5" oninput="calc()">
+        <div id="custom-alcohol-wrap" style="display:none; margin-top:8px;" class="alcohol-fields">
+          <div>
+            <label for="custom-abv">ABV (%)</label>
+            <input type="number" id="custom-abv" value="15" min="1" max="96" step="0.5" oninput="calc()">
+          </div>
+          <div>
+            <label for="custom-alcohol-brix">Sugar (°Bx)</label>
+            <input type="number" id="custom-alcohol-brix" value="0" min="0" max="60" step="0.5" oninput="calc()">
+          </div>
         </div>
       </div>
       <div>
@@ -238,17 +248,16 @@
         <input type="number" id="alcohol-weight" value="100" min="1" max="5000" step="10" oninput="calc()">
       </div>
     </div>
+    <div id="alcohol-note" style="font-size:12px;color:var(--text-secondary);margin-top:10px;line-height:1.5;"></div>
   </div>
 
   <div class="recipe">
     <div id="rows"></div>
   </div>
 
-
-
   <div class="note">
     <p>Juice and purée Brix varies with ripeness — measure yours rather than trusting averages. A ripe watermelon can range from 10–15°Bx.</p>
-    <p>Alcohol freezes at −114°C but depresses the mixture's freeze point significantly. Each % ABV in the final mix lowers the freeze point by roughly 0.4–0.5°C. The calculator accounts for this and the alcohol's own sugar content (negligible for spirits, small for wine).</p>
+    <p>Alcohol freezes at −114°C but depresses the mixture's freeze point significantly. Each % ABV in the final mix lowers the freeze point by roughly 0.4–0.5°C. The calculator accounts for this, plus the sugar each specific drink actually carries — a dry spirit like vodka and a sweet liqueur like Kahlúa can share an ABV but contribute very different amounts of sugar.</p>
     <p>Acid (citric, tartaric) at 0.2–0.5% by weight has negligible effect on Brix but increases perceived sweetness — letting you reduce actual sugar by 1–2°Bx without a flat result.</p>
   </div>
 
@@ -279,8 +288,28 @@ function toggleAlcohol() {
   document.getElementById('alcohol-fields').style.display = on ? 'grid' : 'none';
 }
 
+function toggleCustomAlcoholBrix() {
+  const val = document.getElementById('alcohol-type').value;
+  document.getElementById('custom-alcohol-wrap').style.display = val === 'custom' ? 'grid' : 'none';
+}
+
+// Each entry: ABV (%) and Brix (°Bx, sucrose-equivalent sugar by weight).
+// These are typical figures — actual sugar varies by brand/bottle, so a
+// custom option exists for anyone measuring or label-checking their own.
+const alcoholTypes = {
+  prosecco:    { name: 'Prosecco / sparkling wine', abv: 11,   brix: 1   },
+  white_wine:  { name: 'White or rosé wine',        abv: 12.5, brix: 0.5 },
+  red_wine:    { name: 'Red wine',                  abv: 13.5, brix: 0.5 },
+  sherry:      { name: 'Sherry / port',              abv: 20,   brix: 12  },
+  kahlua:      { name: 'Coffee liqueur (Kahlúa)',    abv: 20,   brix: 28  },
+  amaretto:    { name: 'Amaretto',                   abv: 24,   brix: 30  },
+  aperol:      { name: 'Aperol',                      abv: 11,   brix: 22  },
+  triple_sec:  { name: 'Triple sec',                  abv: 30,   brix: 27  },
+  vodka:       { name: 'Vodka / gin / rum',           abv: 40,   brix: 0   },
+};
+
 document.getElementById('alcohol-type').addEventListener('change', function() {
-  document.getElementById('custom-abv-wrap').style.display = this.value === 'custom-abv' ? 'block' : 'none';
+  toggleCustomAlcoholBrix();
   calc();
 });
 
@@ -294,21 +323,39 @@ function calc() {
 
   // Alcohol inputs
   const alcoholOn = document.getElementById('alcohol-toggle').checked;
-  const alcoholTypeVal = document.getElementById('alcohol-type').value;
-  const abv = alcoholOn
-    ? (alcoholTypeVal === 'custom-abv'
-        ? (parseFloat(document.getElementById('custom-abv').value) || 0)
-        : parseFloat(alcoholTypeVal))
-    : 0;
+  const alcoholKey = document.getElementById('alcohol-type').value;
+  let abv = 0, alcoholBrix = 0, alcoholDisplayName = 'Alcohol';
+
+  if (alcoholOn) {
+    if (alcoholKey === 'custom') {
+      abv = parseFloat(document.getElementById('custom-abv').value) || 0;
+      alcoholBrix = parseFloat(document.getElementById('custom-alcohol-brix').value) || 0;
+      alcoholDisplayName = 'Alcohol (custom)';
+    } else {
+      const sel = alcoholTypes[alcoholKey];
+      abv = sel.abv;
+      alcoholBrix = sel.brix;
+      alcoholDisplayName = sel.name;
+    }
+  }
   const alcoholWeight = alcoholOn ? (parseFloat(document.getElementById('alcohol-weight').value) || 0) : 0;
 
-  // Sugar type properties:
-  // sweetness: relative to sucrose (1.0)
-  // mwRatio: molecular weight vs sucrose (342 g/mol) — lower = more freeze point depression per gram
-  // refractFactor: how much the refractometer over-reads vs actual sucrose-equivalent Brix
-  //   (a refractometer calibrated for sucrose reads dextrose/fructose ~5% higher than actual)
-  // brixContrib: actual Brix contribution per gram in solution (sucrose = 1.0, honey ~0.8 due to water)
-  // displayName: what to show in the recipe row
+  // Alcohol notes — explain what's actually happening with the sugar
+  const alcoholNotes = {
+    prosecco:   'Dry sparkling wine — essentially no residual sugar to account for.',
+    white_wine: 'Dry white/rosé — a touch of residual sugar, usually negligible.',
+    red_wine:   'Dry red — a touch of residual sugar, usually negligible.',
+    sherry:     'Fortified and often sweetened — meaningfully more sugar than table wine.',
+    kahlua:     'A genuinely sweet liqueur — most of its weight beyond the alcohol itself is sugar syrup.',
+    amaretto:   'Sweet almond liqueur — similar sugar load to Kahlúa.',
+    aperol:     'Low ABV but noticeably sweet/bitter — sugar matters here despite the modest alcohol.',
+    triple_sec: 'Sweet orange liqueur — high ABV and high sugar together; affects both Brix and freeze point.',
+    vodka:      'Effectively zero sugar — only the ABV affects your freeze point.',
+    custom:     'Using your entered ABV and Brix values directly.',
+  };
+  document.getElementById('alcohol-note').textContent = alcoholOn ? alcoholNotes[alcoholKey] : '';
+
+  // Sugar type properties
   const sugarTypes = {
     sucrose:    { name: 'White sugar',    sweetness: 1.00, brixContrib: 1.00, fpFactor: 1.00 },
     brown_light: { name: 'Light brown sugar', sweetness: 1.00, brixContrib: 0.97, fpFactor: 1.00 },
@@ -321,7 +368,6 @@ function calc() {
   const sugarKey = document.getElementById('sugar-type').value;
   const sugar = sugarTypes[sugarKey];
 
-  // Sugar notes
   const sugarNotes = {
     sucrose:    'The standard. Clean neutral sweetness, no flavour interference with your base.',
     brown_light: 'About 3.5% molasses by weight. Slightly more moisture than white sugar; very similar Brix contribution. Mild molasses note — works well with coffee, citrus, stone fruit.',
@@ -333,8 +379,7 @@ function calc() {
   };
   document.getElementById('sugar-note').textContent = sugarNotes[sugarKey];
 
-  // Sugar contributed by alcohol
-  const alcoholBrix = abv <= 20 ? Math.max(0, (20 - abv) * 0.15) : 0;
+  // Sugar contributed by alcohol — now a direct lookup/custom value, not an ABV-derived guess
   const sugarFromAlcohol = alcoholWeight * (alcoholBrix / 100);
 
   document.getElementById('brix-disp').textContent = targetBrix + '°Bx';
@@ -363,17 +408,12 @@ function calc() {
   }
 
   // Convert sucrose-equivalent grams → actual grams of chosen sugar
-  // brixContrib: how much Brix 1g of this sugar contributes vs 1g sucrose
-  // So actual weight = sugarEquivNeeded / brixContrib
   const addedSugarActual = sugarEquivNeeded > 0 ? sugarEquivNeeded / sugar.brixContrib : 0;
 
   // Total batch uses actual weight of chosen sugar (it adds mass + its water if honey etc.)
   const totalBatch = totalKnownWeight + addedSugarActual + addedWater;
 
-  // Freeze point:
-  // Sugar contribution: sucrose baseline ~-0.1°C per °Bx, scaled by fpFactor of chosen sugar
-  // (fpFactor reflects molecular weight — lower MW depresses more per gram)
-  // We use the sucrose-equiv amount for the Brix-based calculation, then scale by fpFactor
+  // Freeze point
   const sugarFpDep = targetBrix * 0.1 * sugar.fpFactor;
   const finalAbvPct = alcoholOn ? (alcoholWeight * (abv / 100) / totalBatch * 100) : 0;
   const fp = (-(sugarFpDep) - finalAbvPct * 0.45).toFixed(1);
@@ -391,7 +431,7 @@ function calc() {
   const atTarget = addedSugarActual < 0.5 && addedWater < 0.5;
   const ingredients = [
     { name: baseName, g: baseWeight, pct: baseWeight / totalBatch * 100 },
-    ...(alcoholOn && alcoholWeight > 0 ? [{ name: `Alcohol (${abv}% ABV)`, g: alcoholWeight, pct: alcoholWeight / totalBatch * 100 }] : []),
+    ...(alcoholOn && alcoholWeight > 0 ? [{ name: alcoholDisplayName, g: alcoholWeight, pct: alcoholWeight / totalBatch * 100 }] : []),
     ...(addedSugarActual >= 0.5 ? [{ name: `Add ${sugar.name.toLowerCase()}`, g: addedSugarActual, pct: addedSugarActual / totalBatch * 100 }] : []),
     ...(addedWater >= 0.5 ? [{ name: 'Add water', g: addedWater, pct: addedWater / totalBatch * 100 }] : []),
     ...(atTarget ? [{ name: 'Nothing to add — already at target Brix', g: null }] : []),
