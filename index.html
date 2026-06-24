@@ -159,6 +159,9 @@
   details summary::-webkit-details-marker { display: none; }
   details summary::before { content: '›'; font-size: 16px; display: inline-block; transition: transform 0.2s; }
   details[open] summary::before { transform: rotate(90deg); }
+
+  .intensity-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .intensity-row span { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -188,7 +191,7 @@
     </div>
     <div class="card">
       <label for="base-weight">Weight of your base (g)</label>
-      <input type="number" id="base-weight" value="600" min="10" max="10000" step="10" oninput="calc()">
+      <input type="number" id="base-weight" value="600" min="10" max="10000" step="10" oninput="onBaseWeightChange(); calc()">
     </div>
   </div>
 
@@ -217,38 +220,91 @@
         <span class="toggle-thumb"></span>
       </label>
     </div>
-    <div id="alcohol-fields" style="display:none;" class="alcohol-fields">
+    <div id="alcohol-fields" style="display:none;">
+
+      <!-- Slot 1 -->
       <div>
-        <label for="alcohol-type">Type</label>
-        <select id="alcohol-type" onchange="toggleCustomAlcoholBrix(); calc()">
+        <label for="alcohol-type-1">Type</label>
+        <select id="alcohol-type-1" onchange="toggleCustomAlcoholBrix(1); onAlcoholTypeChange(1); calc()">
           <option value="prosecco">Prosecco / sparkling wine (~11% ABV, dry)</option>
           <option value="white_wine">White or rosé wine (~12.5% ABV, dry)</option>
           <option value="red_wine">Red wine (~13.5% ABV, dry)</option>
           <option value="sherry">Sherry / port (~20% ABV, sweet)</option>
           <option value="kahlua">Coffee liqueur, e.g. Kahlúa (~20% ABV, sweet)</option>
           <option value="amaretto">Amaretto / almond liqueur (~24% ABV, sweet)</option>
+          <option value="nut_liqueur">Frangelico / hazelnut liqueur (~21% ABV, sweet)</option>
           <option value="aperol">Aperitivo, e.g. Aperol (~11% ABV, sweet)</option>
           <option value="triple_sec">Triple sec / orange liqueur (~30% ABV, sweet)</option>
           <option value="vodka">Spirit, e.g. vodka, gin, rum (~40% ABV, dry)</option>
           <option value="custom">Custom — enter ABV &amp; Brix ↓</option>
         </select>
-        <div id="custom-alcohol-wrap" style="display:none; margin-top:8px;" class="alcohol-fields">
+        <div id="custom-alcohol-wrap-1" style="display:none; margin-top:8px;" class="alcohol-fields">
           <div>
-            <label for="custom-abv">ABV (%)</label>
-            <input type="number" id="custom-abv" value="15" min="1" max="96" step="0.5" oninput="calc()">
+            <label for="custom-abv-1">ABV (%)</label>
+            <input type="number" id="custom-abv-1" value="15" min="1" max="96" step="0.5" oninput="onAlcoholTypeChange(1); calc()">
           </div>
           <div>
-            <label for="custom-alcohol-brix">Sugar (°Bx)</label>
-            <input type="number" id="custom-alcohol-brix" value="0" min="0" max="60" step="0.5" oninput="calc()">
+            <label for="custom-alcohol-brix-1">Sugar (°Bx)</label>
+            <input type="number" id="custom-alcohol-brix-1" value="0" min="0" max="60" step="0.5" oninput="calc()">
           </div>
         </div>
       </div>
-      <div>
-        <label for="alcohol-weight">Weight of alcohol (g)</label>
-        <input type="number" id="alcohol-weight" value="100" min="1" max="5000" step="10" oninput="calc()">
+      <div class="intensity-row">
+        <span>Less Present</span>
+        <input type="range" id="alcohol-intensity-1" min="0" max="100" step="1" value="40" oninput="onIntensityChange(1); calc()">
+        <span>More Present</span>
       </div>
+      <input type="hidden" id="alcohol-weight-1" value="0">
+      <div id="alcohol-note-1" style="font-size:12px;color:var(--text-secondary);margin-top:10px;margin-bottom:14px;line-height:1.5;"></div>
+
+      <!-- Toggle for second alcohol -->
+      <div class="toggle-row" style="margin-bottom:0;">
+        <span class="toggle-label">Add a second alcohol</span>
+        <label class="toggle">
+          <input type="checkbox" id="alcohol2-toggle" onchange="toggleAlcohol2(); calc()">
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <!-- Slot 2 -->
+      <div id="alcohol-fields-2" style="display:none; margin-top:14px;">
+        <div>
+          <label for="alcohol-type-2">Type</label>
+          <select id="alcohol-type-2" onchange="toggleCustomAlcoholBrix(2); onAlcoholTypeChange(2); calc()">
+            <option value="prosecco">Prosecco / sparkling wine (~11% ABV, dry)</option>
+            <option value="white_wine">White or rosé wine (~12.5% ABV, dry)</option>
+            <option value="red_wine">Red wine (~13.5% ABV, dry)</option>
+            <option value="sherry">Sherry / port (~20% ABV, sweet)</option>
+            <option value="kahlua" selected>Coffee liqueur, e.g. Kahlúa (~20% ABV, sweet)</option>
+            <option value="amaretto">Amaretto / almond liqueur (~24% ABV, sweet)</option>
+            <option value="nut_liqueur">Frangelico / hazelnut liqueur (~21% ABV, sweet)</option>
+            <option value="aperol">Aperitivo, e.g. Aperol (~11% ABV, sweet)</option>
+            <option value="triple_sec">Triple sec / orange liqueur (~30% ABV, sweet)</option>
+            <option value="vodka">Spirit, e.g. vodka, gin, rum (~40% ABV, dry)</option>
+            <option value="custom">Custom — enter ABV &amp; Brix ↓</option>
+          </select>
+          <div id="custom-alcohol-wrap-2" style="display:none; margin-top:8px;" class="alcohol-fields">
+            <div>
+              <label for="custom-abv-2">ABV (%)</label>
+              <input type="number" id="custom-abv-2" value="15" min="1" max="96" step="0.5" oninput="onAlcoholTypeChange(2); calc()">
+            </div>
+            <div>
+              <label for="custom-alcohol-brix-2">Sugar (°Bx)</label>
+              <input type="number" id="custom-alcohol-brix-2" value="0" min="0" max="60" step="0.5" oninput="calc()">
+            </div>
+          </div>
+        </div>
+        <div class="intensity-row">
+          <span>Less Present</span>
+          <input type="range" id="alcohol-intensity-2" min="0" max="100" step="1" value="40" oninput="onIntensityChange(2); calc()">
+          <span>More Present</span>
+        </div>
+        <input type="hidden" id="alcohol-weight-2" value="0">
+        <div id="alcohol-note-2" style="font-size:12px;color:var(--text-secondary);margin-top:10px;line-height:1.5;"></div>
+      </div>
+
     </div>
-    <div id="alcohol-note" style="font-size:12px;color:var(--text-secondary);margin-top:10px;line-height:1.5;"></div>
   </div>
 
   <div class="recipe">
@@ -285,12 +341,19 @@ function toggleCustomBrix() {
 
 function toggleAlcohol() {
   const on = document.getElementById('alcohol-toggle').checked;
-  document.getElementById('alcohol-fields').style.display = on ? 'grid' : 'none';
+  document.getElementById('alcohol-fields').style.display = on ? 'block' : 'none';
+  if (on) onIntensityChange(1);
 }
 
-function toggleCustomAlcoholBrix() {
-  const val = document.getElementById('alcohol-type').value;
-  document.getElementById('custom-alcohol-wrap').style.display = val === 'custom' ? 'grid' : 'none';
+function toggleAlcohol2() {
+  const on = document.getElementById('alcohol2-toggle').checked;
+  document.getElementById('alcohol-fields-2').style.display = on ? 'block' : 'none';
+  if (on) onIntensityChange(2);
+}
+
+function toggleCustomAlcoholBrix(slot) {
+  const val = document.getElementById('alcohol-type-' + slot).value;
+  document.getElementById('custom-alcohol-wrap-' + slot).style.display = val === 'custom' ? 'grid' : 'none';
 }
 
 // Each entry: ABV (%) and Brix (°Bx, sucrose-equivalent sugar by weight).
@@ -302,16 +365,136 @@ const alcoholTypes = {
   red_wine:    { name: 'Red wine',                  abv: 13.5, brix: 0.5 },
   sherry:      { name: 'Sherry / port',              abv: 20,   brix: 12  },
   kahlua:      { name: 'Coffee liqueur (Kahlúa)',    abv: 20,   brix: 28  },
-  amaretto:    { name: 'Amaretto',                   abv: 24,   brix: 30  },
+  amaretto:    { name: 'Amaretto / almond liqueur',   abv: 24,   brix: 30  },
+  nut_liqueur: { name: 'Frangelico / hazelnut liqueur', abv: 21, brix: 30  },
   aperol:      { name: 'Aperol',                      abv: 11,   brix: 22  },
   triple_sec:  { name: 'Triple sec',                  abv: 30,   brix: 27  },
   vodka:       { name: 'Vodka / gin / rum',           abv: 40,   brix: 0   },
 };
 
-document.getElementById('alcohol-type').addEventListener('change', function() {
-  toggleCustomAlcoholBrix();
-  calc();
-});
+function currentAbvFor(slot) {
+  const key = document.getElementById('alcohol-type-' + slot).value;
+  if (key === 'custom') {
+    return parseFloat(document.getElementById('custom-abv-' + slot).value) || 0;
+  }
+  return alcoholTypes[key].abv;
+}
+
+// Hard ceiling, independent of which drink is chosen. This is the ONLY safety
+// mechanism — the slider physically cannot go past it.
+//
+// The binding concern here is FLAVOR DOMINANCE, not freeze physics: this tool
+// exists for "I have extra coffee/lime juice, make it into a quick granita with
+// a hint of something," so the alcohol needs to stay a supporting note, not
+// overtake or replace the base's own flavor. That constraint is much tighter
+// than what freeze point or texture alone would allow — you'd hit "this no
+// longer tastes like coffee" well before you'd hit "this won't freeze."
+// WEIGHT_CAP_RATIO (~18% of base) is set for that reason, borrowed loosely from
+// cocktail convention on how much a modifier/liqueur can carry before it stops
+// reading as a supporting flavor and starts reading as a co-equal one.
+// ABV_CAP_PCT is kept as a backstop for unusually strong custom spirits, but at
+// this weight ratio it essentially never binds — final ABV tops out well under
+// any freeze-safety concern regardless of which drink is picked.
+const WEIGHT_CAP_RATIO = 0.18;
+const ABV_CAP_PCT = 10;
+const IDEAL_TARGET_ABV_PCT = 3;   // the slider's 50% point — a clear, balanced flavor note
+const MIN_TARGET_ABV_PCT = 0.5;   // the slider's 0% point — barely there
+
+// The hard maximum weight for this slot — the smaller of the two caps.
+// This part is genuinely recursive/cross-slot: the real final-mixture ABV
+// constraint depends on what the other slot actually weighs right now.
+function maxWeightForSlot(baseWeight, otherWeight, otherPureAlcohol, abv) {
+  const weightCap = baseWeight * WEIGHT_CAP_RATIO;
+  const a = abv / 100, cap = ABV_CAP_PCT / 100;
+  const abvCap = a <= cap ? Infinity
+    : (cap * (baseWeight + otherWeight) - otherPureAlcohol) / (a - cap);
+  return Math.max(0, Math.min(weightCap, abvCap));
+}
+
+// Pure alcohol (grams) currently contributed by the OTHER slot, for cross-slot awareness.
+function otherSlotPureAlcohol(slot) {
+  const other = slot === 1 ? 2 : 1;
+  const otherOn = other === 2
+    ? document.getElementById('alcohol2-toggle').checked
+    : document.getElementById('alcohol-toggle').checked;
+  if (!otherOn) return { weight: 0, pure: 0 };
+  const w = parseFloat(document.getElementById('alcohol-weight-' + other).value) || 0;
+  const abv = currentAbvFor(other);
+  return { weight: w, pure: w * (abv / 100) };
+}
+
+function activeAlcoholSlotCount() {
+  let n = 0;
+  if (document.getElementById('alcohol-toggle').checked) n++;
+  if (document.getElementById('alcohol2-toggle').checked) n++;
+  return Math.max(1, n);
+}
+
+// MIN and IDEAL are defined as a fixed budget of pure-alcohol grams relative to
+// the BASE weight (not the growing mixture), which avoids a recursive-percentage
+// problem: if MIN/IDEAL were instead solved as "the final mixture's ABV%", the
+// first active slot would consume the entire budget on its own, leaving the
+// second slot with zero room even at its own "ideal" setting. Anchoring to the
+// base and splitting the fixed gram-budget evenly across active slots means two
+// alcohols at the same slider position land at a genuinely balanced COMBINED note,
+// not double the intended strength or a starved second slot.
+function weightForPureAlcoholBudget(abv, pureGramsTarget) {
+  if (abv <= 0) return 0;
+  return pureGramsTarget / (abv / 100);
+}
+
+// Maps slider position (0-100) to weight, anchored at three points:
+// 0 -> min (barely there), 50 -> ideal (balanced flavor, shared fairly if two slots
+// are active), 100 -> max (the hard cap — the only safety mechanism, nothing past
+// this is reachable, so there's nothing left to warn about).
+function sliderToWeight(slot, pos) {
+  const baseWeight = parseFloat(document.getElementById('base-weight').value) || 0;
+  const abv = currentAbvFor(slot);
+  const other = otherSlotPureAlcohol(slot);
+  const slotCount = activeAlcoholSlotCount();
+
+  const minBudget = (MIN_TARGET_ABV_PCT / 100) * baseWeight / slotCount;
+  const idealBudget = (IDEAL_TARGET_ABV_PCT / 100) * baseWeight / slotCount;
+  const minW = weightForPureAlcoholBudget(abv, minBudget);
+  let idealW = weightForPureAlcoholBudget(abv, idealBudget);
+  const maxW = maxWeightForSlot(baseWeight, other.weight, other.pure, abv);
+  if (idealW > maxW) idealW = maxW * 0.5; // fallback: drink too weak/capped to reach the ideal budget
+
+  if (pos <= 50) return minW + (idealW - minW) * (pos / 50);
+  return idealW + (maxW - idealW) * ((pos - 50) / 50);
+}
+
+// Called when the intensity slider moves: recompute this slot's weight, then
+// refresh the OTHER slot too — its cap depends on this slot's contribution,
+// so a change here can push the other slot's stored weight above its new ceiling.
+function onIntensityChange(slot, refreshOther = true) {
+  const pos = parseFloat(document.getElementById('alcohol-intensity-' + slot).value);
+  const weight = sliderToWeight(slot, pos);
+  document.getElementById('alcohol-weight-' + slot).value = Math.round(weight);
+
+  if (refreshOther) {
+    const other = slot === 1 ? 2 : 1;
+    const otherOn = other === 2
+      ? document.getElementById('alcohol2-toggle').checked
+      : document.getElementById('alcohol-toggle').checked;
+    if (otherOn) refreshSlotWeight(other);
+  }
+}
+
+// Recomputes a slot's weight from its OWN slider position without moving that
+// slider — used when the other slot changes and this one's cap shifts as a result.
+function refreshSlotWeight(slot) {
+  const pos = parseFloat(document.getElementById('alcohol-intensity-' + slot).value);
+  const weight = sliderToWeight(slot, pos);
+  document.getElementById('alcohol-weight-' + slot).value = Math.round(weight);
+}
+
+// Called when the alcohol type changes: re-derive weight from the existing
+// slider position, since a different ABV needs a different gram amount
+// to land on the same point between min/ideal/max.
+function onAlcoholTypeChange(slot) {
+  onIntensityChange(slot);
+}
 
 function calc() {
   const targetBrix = parseFloat(document.getElementById('brix').value);
@@ -321,24 +504,29 @@ function calc() {
     : parseFloat(baseVal);
   const baseWeight = parseFloat(document.getElementById('base-weight').value) || 600;
 
-  // Alcohol inputs
+  // Alcohol inputs — resolve each slot (1 and 2) into {abv, brix, weight, name}
   const alcoholOn = document.getElementById('alcohol-toggle').checked;
-  const alcoholKey = document.getElementById('alcohol-type').value;
-  let abv = 0, alcoholBrix = 0, alcoholDisplayName = 'Alcohol';
+  const alcohol2On = document.getElementById('alcohol2-toggle').checked;
 
-  if (alcoholOn) {
-    if (alcoholKey === 'custom') {
-      abv = parseFloat(document.getElementById('custom-abv').value) || 0;
-      alcoholBrix = parseFloat(document.getElementById('custom-alcohol-brix').value) || 0;
-      alcoholDisplayName = 'Alcohol (custom)';
-    } else {
-      const sel = alcoholTypes[alcoholKey];
-      abv = sel.abv;
-      alcoholBrix = sel.brix;
-      alcoholDisplayName = sel.name;
+  function resolveAlcoholSlot(slot) {
+    const key = document.getElementById('alcohol-type-' + slot).value;
+    const weight = parseFloat(document.getElementById('alcohol-weight-' + slot).value) || 0;
+    if (key === 'custom') {
+      return {
+        abv: parseFloat(document.getElementById('custom-abv-' + slot).value) || 0,
+        brix: parseFloat(document.getElementById('custom-alcohol-brix-' + slot).value) || 0,
+        weight,
+        name: 'Alcohol (custom)',
+        noteKey: 'custom',
+      };
     }
+    const sel = alcoholTypes[key];
+    return { abv: sel.abv, brix: sel.brix, weight, name: sel.name, noteKey: key };
   }
-  const alcoholWeight = alcoholOn ? (parseFloat(document.getElementById('alcohol-weight').value) || 0) : 0;
+
+  const slots = [];
+  if (alcoholOn) slots.push(resolveAlcoholSlot(1));
+  if (alcoholOn && alcohol2On) slots.push(resolveAlcoholSlot(2));
 
   // Alcohol notes — explain what's actually happening with the sugar
   const alcoholNotes = {
@@ -348,12 +536,19 @@ function calc() {
     sherry:     'Fortified and often sweetened — meaningfully more sugar than table wine.',
     kahlua:     'A genuinely sweet liqueur — most of its weight beyond the alcohol itself is sugar syrup.',
     amaretto:   'Sweet almond liqueur — similar sugar load to Kahlúa.',
+    nut_liqueur: 'Sweet hazelnut liqueur — similar sugar load to Kahlúa, with a toasted, nutty flavor rather than almond.',
     aperol:     'Low ABV but noticeably sweet/bitter — sugar matters here despite the modest alcohol.',
     triple_sec: 'Sweet orange liqueur — high ABV and high sugar together; affects both Brix and freeze point.',
     vodka:      'Effectively zero sugar — only the ABV affects your freeze point.',
     custom:     'Using your entered ABV and Brix values directly.',
   };
-  document.getElementById('alcohol-note').textContent = alcoholOn ? alcoholNotes[alcoholKey] : '';
+
+  const alcoholWeightTotal = slots.reduce((sum, s) => sum + s.weight, 0);
+  const sugarFromAlcohol = slots.reduce((sum, s) => sum + s.weight * (s.brix / 100), 0);
+  const alcoholPureTotal = slots.reduce((sum, s) => sum + s.weight * (s.abv / 100), 0);
+
+  document.getElementById('alcohol-note-1').textContent = alcoholOn ? alcoholNotes[slots[0].noteKey] : '';
+  document.getElementById('alcohol-note-2').textContent = (alcoholOn && alcohol2On) ? alcoholNotes[slots[1].noteKey] : '';
 
   // Sugar type properties
   const sugarTypes = {
@@ -379,9 +574,6 @@ function calc() {
   };
   document.getElementById('sugar-note').textContent = sugarNotes[sugarKey];
 
-  // Sugar contributed by alcohol — now a direct lookup/custom value, not an ABV-derived guess
-  const sugarFromAlcohol = alcoholWeight * (alcoholBrix / 100);
-
   document.getElementById('brix-disp').textContent = targetBrix + '°Bx';
 
   const noteEl = document.getElementById('brix-note');
@@ -392,7 +584,7 @@ function calc() {
 
   // Sugar in base (always sucrose-equivalent for Brix purposes)
   const sugarInBase = baseWeight * (baseNatBrix / 100);
-  const totalKnownWeight = baseWeight + alcoholWeight;
+  const totalKnownWeight = baseWeight + alcoholWeightTotal;
   const totalKnownSugar = sugarInBase + sugarFromAlcohol;
   const knownBrix = totalKnownWeight > 0 ? totalKnownSugar / totalKnownWeight * 100 : 0;
 
@@ -413,9 +605,9 @@ function calc() {
   // Total batch uses actual weight of chosen sugar (it adds mass + its water if honey etc.)
   const totalBatch = totalKnownWeight + addedSugarActual + addedWater;
 
-  // Freeze point
+  // Freeze point — sum the pure-alcohol contribution from all slots
   const sugarFpDep = targetBrix * 0.1 * sugar.fpFactor;
-  const finalAbvPct = alcoholOn ? (alcoholWeight * (abv / 100) / totalBatch * 100) : 0;
+  const finalAbvPct = alcoholOn ? (alcoholPureTotal / totalBatch * 100) : 0;
   const fp = (-(sugarFpDep) - finalAbvPct * 0.45).toFixed(1);
 
   const brixClass = targetBrix < 18 ? 'b-bad' : targetBrix <= 22 ? 'b-ok' : 'b-warn';
@@ -429,9 +621,13 @@ function calc() {
   const baseName = baseVal === 'custom' ? 'Your base' : (baseNames[baseVal] || 'Your base');
 
   const atTarget = addedSugarActual < 0.5 && addedWater < 0.5;
+  const alcoholRows = slots
+    .filter(s => s.weight > 0)
+    .map(s => ({ name: s.name, g: s.weight, pct: s.weight / totalBatch * 100 }));
+
   const ingredients = [
     { name: baseName, g: baseWeight, pct: baseWeight / totalBatch * 100 },
-    ...(alcoholOn && alcoholWeight > 0 ? [{ name: alcoholDisplayName, g: alcoholWeight, pct: alcoholWeight / totalBatch * 100 }] : []),
+    ...alcoholRows,
     ...(addedSugarActual >= 0.5 ? [{ name: `Add ${sugar.name.toLowerCase()}`, g: addedSugarActual, pct: addedSugarActual / totalBatch * 100 }] : []),
     ...(addedWater >= 0.5 ? [{ name: 'Add water', g: addedWater, pct: addedWater / totalBatch * 100 }] : []),
     ...(atTarget ? [{ name: 'Nothing to add — already at target Brix', g: null }] : []),
@@ -450,6 +646,13 @@ function calc() {
       <span class="grams">${i.g != null ? Math.round(i.g) + 'g' : ''}</span>
     </div>
   `).join('');
+}
+
+// Called when the base weight changes: if alcohol slots are active, re-derive
+// their weight from the existing intensity setting rather than leaving a now-stale gram value.
+function onBaseWeightChange() {
+  if (document.getElementById('alcohol-toggle').checked) onIntensityChange(1);
+  if (document.getElementById('alcohol2-toggle').checked) onIntensityChange(2);
 }
 
 calc();
