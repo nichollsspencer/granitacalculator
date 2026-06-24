@@ -6,11 +6,23 @@
 <title>Granita Calculator</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Responsive type scale, rem-based throughout instead of fixed px, so every
+     size below cascades proportionally from this one root value. 16px is the
+     WCAG-floor minimum on small phones; it scales up modestly on larger
+     screens via clamp() rather than jumping straight to a fixed larger size —
+     this keeps proportions (heading vs. body vs. caption) consistent at every
+     width, which is what actually preserves the look and feel, rather than
+     each element being individually re-sized per breakpoint. */
+  html {
+    font-size: clamp(16px, 0.6vw + 14.5px, 18px);
+  }
+
   :root {
     --bg: #ffffff;
     --bg-secondary: #f5f5f3;
     --text: #1a1a18;
-    --text-secondary: #6b6b67;
+    --text-secondary: #4d4d4d;
     --border: rgba(0,0,0,0.12);
     --border-secondary: rgba(0,0,0,0.22);
     --radius-md: 8px;
@@ -18,13 +30,23 @@
     --green-bg: #EAF3DE; --green-text: #3B6D11;
     --amber-bg: #FAEEDA; --amber-text: #854F0B;
     --red-bg: #FCEBEB; --red-text: #A32D2D;
+
+    /* Type scale, in rem, relative to the html { font-size } above.
+       Floor values exist so secondary text never drops below an accessible
+       minimum even where space is visually tight (e.g. percentage columns). */
+    --fs-2xl:  1.65rem;   /* page title */
+    --fs-xl:   1.2rem;    /* section headers, card titles */
+    --fs-lg:   1.1rem;    /* recipe row text, prominent labels */
+    --fs-base: 1rem;      /* body text floor — 16px equivalent */
+    --fs-sm:   0.95rem;   /* secondary text floor — never smaller than this */
+    --fs-hero: 1.5rem;    /* large numeric readouts (grams, slider value) */
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #1e1e1c;
       --bg-secondary: #2a2a28;
       --text: #f0ede8;
-      --text-secondary: #9a9990;
+      --text-secondary: #bdbdbd;
       --border: rgba(255,255,255,0.10);
       --border-secondary: rgba(255,255,255,0.20);
       --green-bg: #173404; --green-text: #C0DD97;
@@ -36,15 +58,15 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-size: 16px;
+    font-size: var(--fs-base);
     line-height: 1.6;
     min-height: 100vh;
     padding: 2rem 1rem;
   }
   .container { max-width: 680px; margin: 0 auto; }
   header { margin-bottom: 2rem; }
-  header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
-  header p { font-size: 14px; color: var(--text-secondary); }
+  header h1 { font-size: var(--fs-2xl); font-weight: 500; margin-bottom: 4px; }
+  header p { font-size: var(--fs-base); color: var(--text-secondary); }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
   @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
@@ -55,8 +77,10 @@
     padding: 1rem 1.25rem;
   }
   .card-label {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     color: var(--text-secondary);
     margin-bottom: 10px;
     display: flex;
@@ -64,7 +88,10 @@
     gap: 8px;
   }
   label {
-    font-size: 13px;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     color: var(--text-secondary);
     display: block;
     margin-bottom: 6px;
@@ -76,12 +103,20 @@
     border-radius: var(--radius-md);
     background: var(--bg);
     color: var(--text);
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-family: inherit;
     outline: none;
   }
-  select:focus, input[type=number]:focus {
-    box-shadow: 0 0 0 2px rgba(100,100,255,0.25);
+  select:focus-visible, input[type=number]:focus-visible, input[type=checkbox]:focus-visible,
+  input[type=range]:focus-visible, summary:focus-visible {
+    outline: 2.5px solid var(--accent-focus, #2d5f8a);
+    outline-offset: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    select:focus-visible, input[type=number]:focus-visible, input[type=checkbox]:focus-visible,
+    input[type=range]:focus-visible, summary:focus-visible {
+      outline-color: #8fb8e0;
+    }
   }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -92,7 +127,7 @@
     justify-content: space-between;
     margin-bottom: 0;
   }
-  .toggle-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+  .toggle-label { font-size: var(--fs-base); font-weight: 500; color: var(--text-secondary); }
   .toggle {
     position: relative;
     width: 36px;
@@ -123,45 +158,62 @@
   }
   .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
   .alcohol-fields { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .alcohol-fields { grid-template-columns: 1fr; } }
   .alcohol-fields-full { grid-column: 1 / -1; }
 
   .slider-card { margin-bottom: 1rem; }
-  .slider-card h3 { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
-  .slider-row { display: flex; align-items: center; gap: 10px; }
-  .slider-row span { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
-  .slider-val { font-size: 24px; font-weight: 500; min-width: 72px; text-align: right; }
-  input[type=range] { flex: 1; accent-color: var(--text); cursor: pointer; }
-  .brix-note { font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; min-height: 1.5rem; }
+  .slider-card h2 { font-size: var(--fs-xl); font-weight: 500; margin-bottom: 10px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .slider-row input[type=range] { min-width: 90px; }
+  .slider-row span { font-size: var(--fs-sm); color: var(--text-secondary); white-space: nowrap; }
+  .slider-val { font-size: var(--fs-hero); font-weight: 500; min-width: 72px; text-align: right; }
+  input[type=range] { flex: 1; min-width: 0; accent-color: var(--text); cursor: pointer; }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
   @media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } }
   .stat { background: var(--bg-secondary); border-radius: var(--radius-md); padding: .6rem .75rem; text-align: center; }
-  .stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
-  .stat-val { font-size: 15px; font-weight: 500; }
+  .stat-label { font-size: var(--fs-sm); color: var(--text-secondary); margin-bottom: 2px; }
+  .stat-val { font-size: var(--fs-xl); font-weight: 500; }
 
   .recipe { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .recipe h3 { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
-  .recipe-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: 15px; gap: 8px; }
+  .recipe h3 { font-size: var(--fs-xl); font-weight: 500; margin-bottom: 10px; }
+  .recipe-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: var(--fs-lg); gap: 8px; }
   .recipe-row:last-child { border-bottom: none; }
   .recipe-row .name { flex: 1; }
-  .recipe-row .pct { color: var(--text-secondary); font-size: 13px; min-width: 44px; text-align: right; }
-  .recipe-row .grams { font-size: 20px; font-weight: 500; min-width: 64px; text-align: right; }
+  .recipe-row .pct { color: var(--text-secondary); font-size: var(--fs-sm); min-width: 44px; text-align: right; }
+  .recipe-row .grams { font-size: var(--fs-hero); font-weight: 500; min-width: 64px; text-align: right; }
 
-  .badge { font-size: 11px; padding: 3px 9px; border-radius: var(--radius-md); font-weight: 500; display: inline-block; }
+  .badge { font-size: var(--fs-sm); padding: 3px 9px; border-radius: var(--radius-md); font-weight: 500; display: inline-block; }
   .b-ok  { background: var(--green-bg); color: var(--green-text); }
   .b-warn { background: var(--amber-bg); color: var(--amber-text); }
   .b-bad  { background: var(--red-bg); color: var(--red-text); }
 
-  .note { font-size: 13px; color: var(--text-secondary); line-height: 1.65; border-top: 0.5px solid var(--border); padding-top: 1rem; margin-top: 0.5rem; }
+  .note { font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.65; border-top: 0.5px solid var(--border); padding-top: 1rem; margin-top: 0.5rem; }
   .note p + p { margin-top: 0.5rem; }
+
+  /* Shared treatment for secondary/hint text blocks (notes, advisory text under
+     a selection). The left bar is a structural cue that "this is a side note,"
+     so the hierarchy doesn't rely on the text color being noticeably lighter —
+     which matters now that secondary text was darkened to clear WCAG AAA and
+     reads closer to primary text than it used to. */
+  .note-aside {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    border-left: 3px solid var(--border-secondary);
+    padding-left: 10px;
+  }
+  .brix-note.note-aside { margin-top: 8px; min-height: 1.5rem; }
+
   details { margin-top: 1rem; }
-  details summary { font-size: 13px; color: var(--text-secondary); cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 6px; }
+  details summary { font-size: var(--fs-base); color: var(--text-secondary); cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 6px; }
   details summary::-webkit-details-marker { display: none; }
-  details summary::before { content: '›'; font-size: 16px; display: inline-block; transition: transform 0.2s; }
+  details summary::before { content: '›'; font-size: var(--fs-xl); display: inline-block; transition: transform 0.2s; }
   details[open] summary::before { transform: rotate(90deg); }
 
-  .intensity-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-  .intensity-row span { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+  .intensity-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .intensity-row input[type=range] { min-width: 90px; }
+  .intensity-row span { font-size: var(--fs-sm); color: var(--text-secondary); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -174,24 +226,72 @@
   <div class="grid">
     <div class="card">
       <label for="base">Base ingredient</label>
-      <select id="base" onchange="toggleCustomBrix(); calc()">
+      <select id="base" onchange="toggleCustomBrix(1); calc()">
         <option value="0">Water (neutral)</option>
-        <option value="8">Fresh citrus juice (~8°Bx)</option>
+        <option value="8">Citrus juice — lemon/lime (~8°Bx)</option>
+        <option value="11.5">Orange juice (~11.5°Bx)</option>
         <option value="13">Watermelon juice (~13°Bx)</option>
+        <option value="12">Apple juice (~12°Bx)</option>
+        <option value="13.5">Pineapple juice (~13.5°Bx)</option>
+        <option value="14">Cranberry juice, unsweetened (~14°Bx)</option>
+        <option value="11">Grapefruit juice (~11°Bx)</option>
         <option value="11">Strawberry purée (~11°Bx)</option>
         <option value="14">Peach purée (~14°Bx)</option>
         <option value="16">Mango purée (~16°Bx)</option>
         <option value="5">Coffee, brewed (~5°Bx)</option>
         <option value="custom">Custom — enter measured Brix ↓</option>
       </select>
-      <div id="custom-brix-wrap" style="display:none; margin-top:10px;">
-        <label for="custom-brix">Measured Brix of your base (°Bx)</label>
-        <input type="number" id="custom-brix" value="12" min="0" max="40" step="0.5" oninput="calc()">
+      <div id="custom-brix-wrap-1" style="display:none; margin-top:10px;">
+        <label for="custom-brix-1">Measured Brix of your base (°Bx)</label>
+        <input type="number" id="custom-brix-1" value="12" min="0" max="40" step="0.5" oninput="calc()">
       </div>
     </div>
     <div class="card">
       <label for="base-weight">Weight of your base (g)</label>
       <input type="number" id="base-weight" value="600" min="10" max="10000" step="10" oninput="onBaseWeightChange(); calc()">
+    </div>
+  </div>
+
+  <!-- Split base: a second base ingredient, combined with the first by weight/sugar -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="toggle-row">
+      <span class="toggle-label">Split the base between two ingredients?</span>
+      <label class="toggle">
+        <input type="checkbox" id="split-base-toggle" aria-label="Split the base between two ingredients" onchange="toggleSplitBase(); onBaseWeightChange(); calc()">
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+    </div>
+    <div id="split-base-fields" style="display:none; margin-top:14px;">
+      <div class="alcohol-fields">
+        <div>
+          <label for="base-2">Second ingredient</label>
+          <select id="base-2" onchange="toggleCustomBrix(2); calc()">
+            <option value="0">Water (neutral)</option>
+            <option value="8" selected>Citrus juice — lemon/lime (~8°Bx)</option>
+            <option value="11.5">Orange juice (~11.5°Bx)</option>
+            <option value="13">Watermelon juice (~13°Bx)</option>
+            <option value="12">Apple juice (~12°Bx)</option>
+            <option value="13.5">Pineapple juice (~13.5°Bx)</option>
+            <option value="14">Cranberry juice, unsweetened (~14°Bx)</option>
+            <option value="11">Grapefruit juice (~11°Bx)</option>
+            <option value="11">Strawberry purée (~11°Bx)</option>
+            <option value="14">Peach purée (~14°Bx)</option>
+            <option value="16">Mango purée (~16°Bx)</option>
+            <option value="5">Coffee, brewed (~5°Bx)</option>
+            <option value="custom">Custom — enter measured Brix ↓</option>
+          </select>
+          <div id="custom-brix-wrap-2" style="display:none; margin-top:10px;">
+            <label for="custom-brix-2">Measured Brix of the second ingredient (°Bx)</label>
+            <input type="number" id="custom-brix-2" value="8" min="0" max="40" step="0.5" oninput="calc()">
+          </div>
+        </div>
+        <div>
+          <label for="base-2-weight">Weight (g)</label>
+          <input type="number" id="base-2-weight" value="100" min="0" max="5000" step="5" oninput="onBaseWeightChange(); calc()">
+        </div>
+      </div>
+      <div id="split-base-result" class="note-aside" style="margin-top:12px;"></div>
     </div>
   </div>
 
@@ -207,7 +307,7 @@
       <option value="maplesyrup">Maple syrup</option>
       <option value="invert">Invert sugar / trimoline</option>
     </select>
-    <div id="sugar-note" style="font-size:12px;color:var(--text-secondary);margin-top:8px;line-height:1.5;"></div>
+    <div id="sugar-note" class="note-aside" style="margin-top:8px;"></div>
   </div>
 
   <!-- Alcohol section -->
@@ -215,7 +315,7 @@
     <div class="toggle-row">
       <span class="toggle-label">Add alcohol</span>
       <label class="toggle">
-        <input type="checkbox" id="alcohol-toggle" onchange="toggleAlcohol(); calc()">
+        <input type="checkbox" id="alcohol-toggle" aria-label="Add alcohol" onchange="toggleAlcohol(); calc()">
         <span class="toggle-track"></span>
         <span class="toggle-thumb"></span>
       </label>
@@ -251,17 +351,17 @@
       </div>
       <div class="intensity-row">
         <span>Less Present</span>
-        <input type="range" id="alcohol-intensity-1" min="0" max="100" step="1" value="40" oninput="onIntensityChange(1); calc()">
+        <input type="range" id="alcohol-intensity-1" min="0" max="100" step="1" value="40" aria-label="Alcohol 1 flavor intensity, less present to more present" oninput="onIntensityChange(1); calc()">
         <span>More Present</span>
       </div>
       <input type="hidden" id="alcohol-weight-1" value="0">
-      <div id="alcohol-note-1" style="font-size:12px;color:var(--text-secondary);margin-top:10px;margin-bottom:14px;line-height:1.5;"></div>
+      <div id="alcohol-note-1" class="note-aside" style="margin-top:10px;margin-bottom:14px;"></div>
 
       <!-- Toggle for second alcohol -->
       <div class="toggle-row" style="margin-bottom:0;">
         <span class="toggle-label">Add a second alcohol</span>
         <label class="toggle">
-          <input type="checkbox" id="alcohol2-toggle" onchange="toggleAlcohol2(); calc()">
+          <input type="checkbox" id="alcohol2-toggle" aria-label="Add a second alcohol" onchange="toggleAlcohol2(); calc()">
           <span class="toggle-track"></span>
           <span class="toggle-thumb"></span>
         </label>
@@ -297,18 +397,18 @@
         </div>
         <div class="intensity-row">
           <span>Less Present</span>
-          <input type="range" id="alcohol-intensity-2" min="0" max="100" step="1" value="40" oninput="onIntensityChange(2); calc()">
+          <input type="range" id="alcohol-intensity-2" min="0" max="100" step="1" value="40" aria-label="Alcohol 2 flavor intensity, less present to more present" oninput="onIntensityChange(2); calc()">
           <span>More Present</span>
         </div>
         <input type="hidden" id="alcohol-weight-2" value="0">
-        <div id="alcohol-note-2" style="font-size:12px;color:var(--text-secondary);margin-top:10px;line-height:1.5;"></div>
+        <div id="alcohol-note-2" class="note-aside" style="margin-top:10px;"></div>
       </div>
 
     </div>
   </div>
 
   <div class="recipe">
-    <div id="rows"></div>
+    <div id="rows" aria-live="polite"></div>
   </div>
 
   <div class="note">
@@ -319,24 +419,29 @@
 
   <details id="advanced">
     <summary>Advanced settings</summary>
-    <div style="margin-top:1rem; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:1rem;" id="advanced-stats"></div>
+    <div style="margin-top:1rem; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:1rem;" id="advanced-stats" aria-live="polite"></div>
     <div class="card slider-card">
-      <h3>Target Brix</h3>
+      <h2>Target Brix</h2>
       <div class="slider-row">
         <span>16°</span>
-        <input type="range" id="brix" min="16" max="26" step="0.5" value="20" oninput="calc()">
+        <input type="range" id="brix" min="16" max="26" step="0.5" value="20" aria-label="Target Brix, 16 to 26 degrees" oninput="calc()">
         <span>26°</span>
         <span class="slider-val" id="brix-disp">20°Bx</span>
       </div>
-      <div class="brix-note" id="brix-note"></div>
+      <div class="brix-note note-aside" id="brix-note"></div>
     </div>
   </details>
 </div>
 
 <script>
-function toggleCustomBrix() {
-  const val = document.getElementById('base').value;
-  document.getElementById('custom-brix-wrap').style.display = val === 'custom' ? 'block' : 'none';
+function toggleCustomBrix(slot) {
+  const val = document.getElementById(slot === 2 ? 'base-2' : 'base').value;
+  document.getElementById('custom-brix-wrap-' + slot).style.display = val === 'custom' ? 'block' : 'none';
+}
+
+function toggleSplitBase() {
+  const on = document.getElementById('split-base-toggle').checked;
+  document.getElementById('split-base-fields').style.display = on ? 'block' : 'none';
 }
 
 function toggleAlcohol() {
@@ -371,6 +476,33 @@ const alcoholTypes = {
   triple_sec:  { name: 'Triple sec',                  abv: 30,   brix: 27  },
   vodka:       { name: 'Vodka / gin / rum',           abv: 40,   brix: 0   },
 };
+
+// The actual base weight to use everywhere alcohol sizing depends on it —
+// the SUM of all active base ingredients, since alcohol should size itself
+// against the whole batch being flavored, not just the first ingredient.
+// NOTE: unlike calc()'s baseIngredients array, this stays a simple two-term
+// sum since weight is all it needs (no Brix, no names) and the UI currently
+// caps at one optional second ingredient. If a third base ingredient slot is
+// ever added, add its weight field here too.
+function effectiveBaseWeight() {
+  const weight1 = parseFloat(document.getElementById('base-weight').value) || 0;
+  const splitOn = document.getElementById('split-base-toggle').checked;
+  if (!splitOn) return weight1;
+  const weight2 = parseFloat(document.getElementById('base-2-weight').value) || 0;
+  return weight1 + weight2;
+}
+
+// Read an ingredient's display name directly from its selected <option> text,
+// rather than a separate hardcoded lookup keyed by Brix value — several
+// ingredients intentionally share the same Brix estimate (e.g. grapefruit
+// juice and strawberry purée are both ~11°Bx), so a value-keyed lookup would
+// silently show the wrong name for whichever entry wasn't first in the table.
+function selectedIngredientName(selectId, customLabel) {
+  const sel = document.getElementById(selectId);
+  if (sel.value === 'custom') return customLabel;
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? opt.textContent.replace(/\s*\(~?[\d.]+°Bx.*?\)\s*$/, '').trim() : customLabel;
+}
 
 function currentAbvFor(slot) {
   const key = document.getElementById('alcohol-type-' + slot).value;
@@ -448,7 +580,7 @@ function weightForPureAlcoholBudget(abv, pureGramsTarget) {
 // are active), 100 -> max (the hard cap — the only safety mechanism, nothing past
 // this is reachable, so there's nothing left to warn about).
 function sliderToWeight(slot, pos) {
-  const baseWeight = parseFloat(document.getElementById('base-weight').value) || 0;
+  const baseWeight = effectiveBaseWeight();
   const abv = currentAbvFor(slot);
   const other = otherSlotPureAlcohol(slot);
   const slotCount = activeAlcoholSlotCount();
@@ -498,11 +630,43 @@ function onAlcoholTypeChange(slot) {
 
 function calc() {
   const targetBrix = parseFloat(document.getElementById('brix').value);
-  const baseVal = document.getElementById('base').value;
-  const baseNatBrix = baseVal === 'custom'
-    ? (parseFloat(document.getElementById('custom-brix').value) || 0)
-    : parseFloat(baseVal);
-  const baseWeight = parseFloat(document.getElementById('base-weight').value) || 600;
+
+  // Base ingredients as a list, not a hardcoded "ingredient 1 + optional
+  // ingredient 2" pair. The UI currently only exposes one optional second
+  // slot, but the math below works for any number of entries — adding a
+  // third ingredient later is a UI change (one more card + push into this
+  // array), not a rework of the combine/display logic.
+  function readIngredient(selectId, weightId, customBrixId, fallbackWeight, fallbackLabel) {
+    const sel = document.getElementById(selectId);
+    const val = sel.value;
+    const brix = val === 'custom'
+      ? (parseFloat(document.getElementById(customBrixId).value) || 0)
+      : parseFloat(val);
+    const weight = parseFloat(document.getElementById(weightId).value) || fallbackWeight || 0;
+    return { brix, weight, name: selectedIngredientName(selectId, fallbackLabel) };
+  }
+
+  const baseIngredients = [
+    readIngredient('base', 'base-weight', 'custom-brix-1', 600, 'Your base'),
+  ];
+  const splitOn = document.getElementById('split-base-toggle').checked;
+  const splitResultEl = document.getElementById('split-base-result');
+  if (splitOn) {
+    baseIngredients.push(readIngredient('base-2', 'base-2-weight', 'custom-brix-2', 0, 'Second ingredient'));
+  }
+
+  // Combine however many ingredients are present by conserving sugar mass —
+  // identical math regardless of whether there are 1, 2, or eventually more.
+  const baseWeight = baseIngredients.reduce((sum, ing) => sum + ing.weight, 0);
+  const baseSugarMass = baseIngredients.reduce((sum, ing) => sum + ing.weight * (ing.brix / 100), 0);
+  let baseNatBrix = baseWeight > 0 ? (baseSugarMass / baseWeight) * 100 : 0;
+
+  if (splitOn) {
+    const firstAlone = baseIngredients[0].brix;
+    splitResultEl.textContent = `Combined base: ${Math.round(baseWeight)}g at ~${baseNatBrix.toFixed(1)}°Bx (ingredient 1 alone was ${firstAlone.toFixed(1)}°Bx).`;
+  } else if (splitResultEl) {
+    splitResultEl.textContent = '';
+  }
 
   // Alcohol inputs — resolve each slot (1 and 2) into {abv, brix, weight, name}
   const alcoholOn = document.getElementById('alcohol-toggle').checked;
@@ -613,20 +777,20 @@ function calc() {
   const brixClass = targetBrix < 18 ? 'b-bad' : targetBrix <= 22 ? 'b-ok' : 'b-warn';
   const brixLabel = targetBrix < 18 ? 'Too icy' : targetBrix <= 22 ? 'Ideal' : 'Soft/sorbet';
 
-  const baseNames = {
-    '0': 'Water', '8': 'Citrus juice', '13': 'Watermelon juice',
-    '11': 'Strawberry purée', '14': 'Peach purée', '16': 'Mango purée',
-    '5': 'Coffee'
-  };
-  const baseName = baseVal === 'custom' ? 'Your base' : (baseNames[baseVal] || 'Your base');
-
   const atTarget = addedSugarActual < 0.5 && addedWater < 0.5;
   const alcoholRows = slots
     .filter(s => s.weight > 0)
     .map(s => ({ name: s.name, g: s.weight, pct: s.weight / totalBatch * 100 }));
 
+  // Each base ingredient already carries its own correct name/weight from
+  // baseIngredients — no need to re-derive or subtract anything, and this
+  // scales to however many entries are in the array without changes here.
+  const baseRows = baseIngredients
+    .filter(ing => ing.weight > 0)
+    .map(ing => ({ name: ing.name, g: ing.weight, pct: ing.weight / totalBatch * 100 }));
+
   const ingredients = [
-    { name: baseName, g: baseWeight, pct: baseWeight / totalBatch * 100 },
+    ...baseRows,
     ...alcoholRows,
     ...(addedSugarActual >= 0.5 ? [{ name: `Add ${sugar.name.toLowerCase()}`, g: addedSugarActual, pct: addedSugarActual / totalBatch * 100 }] : []),
     ...(addedWater >= 0.5 ? [{ name: 'Add water', g: addedWater, pct: addedWater / totalBatch * 100 }] : []),
@@ -636,7 +800,7 @@ function calc() {
   document.getElementById('advanced-stats').innerHTML = `
     <div class="stat"><div class="stat-label">Total batch</div><div class="stat-val">${Math.round(totalBatch)}g</div></div>
     <div class="stat"><div class="stat-label">Freeze point</div><div class="stat-val">${fp}°C</div></div>
-    <div class="stat"><div class="stat-label">Texture</div><div class="stat-val" style="font-size:14px;padding-top:6px"><span class="badge ${brixClass}">${brixLabel}</span></div></div>
+    <div class="stat"><div class="stat-label">Texture</div><div class="stat-val" style="font-size:var(--fs-base);padding-top:6px"><span class="badge ${brixClass}">${brixLabel}</span></div></div>
   `;
 
   document.getElementById('rows').innerHTML = ingredients.map(i => `
