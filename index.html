@@ -69,7 +69,7 @@
   header p { font-size: var(--fs-base); color: var(--text-secondary); }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
   .card {
     background: var(--bg-secondary);
@@ -125,9 +125,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-bottom: 0;
   }
-  .toggle-label { font-size: var(--fs-base); font-weight: 500; color: var(--text-secondary); }
+  .toggle-label { font-size: var(--fs-base); font-weight: 500; color: var(--text-secondary); flex: 1; min-width: 0; }
   .toggle {
     position: relative;
     width: 36px;
@@ -163,25 +164,41 @@
 
   .slider-card { margin-bottom: 1rem; }
   .slider-card h2 { font-size: var(--fs-xl); font-weight: 500; margin-bottom: 10px; }
-  .slider-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  @media (max-width: 480px) {
+    .slider-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "slider slider" "lessLabel moreLabel" "readout readout";
+      align-items: center;
+      gap: 6px 10px;
+    }
+    .slider-row input[type=range] { grid-area: slider; width: 100%; }
+    .slider-row span:nth-child(1) { grid-area: lessLabel; text-align: left; white-space: normal; line-height: 1.25; }
+    .slider-row span:nth-child(3) { grid-area: moreLabel; text-align: right; white-space: normal; line-height: 1.25; }
+    .slider-row .slider-val { grid-area: readout; text-align: center; min-width: 0; }
+  }
   .slider-row input[type=range] { min-width: 90px; }
   .slider-row span { font-size: var(--fs-sm); color: var(--text-secondary); white-space: nowrap; }
   .slider-val { font-size: var(--fs-hero); font-weight: 500; min-width: 72px; text-align: right; }
   input[type=range] { flex: 1; min-width: 0; accent-color: var(--text); cursor: pointer; }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
-  @media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 430px) { .stats { grid-template-columns: 1fr; } }
   .stat { background: var(--bg-secondary); border-radius: var(--radius-md); padding: .6rem .75rem; text-align: center; }
   .stat-label { font-size: var(--fs-sm); color: var(--text-secondary); margin-bottom: 2px; }
   .stat-val { font-size: var(--fs-xl); font-weight: 500; }
 
-  .recipe { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .recipe h3 { font-size: var(--fs-xl); font-weight: 500; margin-bottom: 10px; }
-  .recipe-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: var(--fs-lg); gap: 8px; }
-  .recipe-row:last-child { border-bottom: none; }
-  .recipe-row .name { flex: 1; }
-  .recipe-row .pct { color: var(--text-secondary); font-size: var(--fs-sm); min-width: 44px; text-align: right; }
-  .recipe-row .grams { font-size: var(--fs-hero); font-weight: 500; min-width: 64px; text-align: right; }
+  .recipe { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+  .recipe-row {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: .75rem 1rem;
+  }
+  .recipe-row .name { font-size: var(--fs-lg); font-weight: 500; margin-bottom: 4px; }
+  .recipe-row .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .recipe-row .pct { color: var(--text-secondary); font-size: var(--fs-sm); }
+  .recipe-row .grams { font-size: var(--fs-hero); font-weight: 500; }
 
   .badge { font-size: var(--fs-sm); padding: 3px 9px; border-radius: var(--radius-md); font-weight: 500; display: inline-block; }
   .b-ok  { background: var(--green-bg); color: var(--green-text); }
@@ -211,7 +228,19 @@
   details summary::before { content: '›'; font-size: var(--fs-xl); display: inline-block; transition: transform 0.2s; }
   details[open] summary::before { transform: rotate(90deg); }
 
-  .intensity-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .intensity-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  @media (max-width: 480px) {
+    .intensity-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "slider slider" "lessLabel moreLabel";
+      align-items: center;
+      gap: 6px 10px;
+    }
+    .intensity-row input[type=range] { grid-area: slider; width: 100%; }
+    .intensity-row span:first-child { grid-area: lessLabel; text-align: left; white-space: normal; line-height: 1.25; }
+    .intensity-row span:last-child { grid-area: moreLabel; text-align: right; white-space: normal; line-height: 1.25; }
+  }
   .intensity-row input[type=range] { min-width: 90px; }
   .intensity-row span { font-size: var(--fs-sm); color: var(--text-secondary); white-space: nowrap; }
 </style>
@@ -255,7 +284,7 @@
   <!-- Split base: a second base ingredient, combined with the first by weight/sugar -->
   <div class="card" style="margin-bottom:1rem;">
     <div class="toggle-row">
-      <span class="toggle-label">Split the base between two ingredients?</span>
+      <span class="toggle-label">Split the base</span>
       <label class="toggle">
         <input type="checkbox" id="split-base-toggle" aria-label="Split the base between two ingredients" onchange="toggleSplitBase(); onBaseWeightChange(); calc()">
         <span class="toggle-track"></span>
@@ -419,7 +448,9 @@
 
   <details id="advanced">
     <summary>Advanced settings</summary>
-    <div style="margin-top:1rem; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:1rem;" id="advanced-stats" aria-live="polite"></div>
+    <div class="card" style="margin-top:1rem; margin-bottom:1rem;">
+      <div class="stats" id="advanced-stats" aria-live="polite"></div>
+    </div>
     <div class="card slider-card">
       <h2>Target Brix</h2>
       <div class="slider-row">
@@ -805,9 +836,12 @@ function calc() {
 
   document.getElementById('rows').innerHTML = ingredients.map(i => `
     <div class="recipe-row">
-      <span class="name">${i.name}</span>
-      <span class="pct">${i.g != null ? i.pct.toFixed(1) + '%' : ''}</span>
-      <span class="grams">${i.g != null ? Math.round(i.g) + 'g' : ''}</span>
+      <div class="name">${i.name}</div>
+      ${i.g != null ? `
+      <div class="meta">
+        <span class="pct">${i.pct.toFixed(1)}%</span>
+        <span class="grams">${Math.round(i.g)}g</span>
+      </div>` : ''}
     </div>
   `).join('');
 }
